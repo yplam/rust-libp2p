@@ -30,7 +30,7 @@ use libp2p_swarm::behaviour::{ConnectionClosed, DialFailure, FromSwarm};
 use libp2p_swarm::dial_opts::{self, DialOpts};
 use libp2p_swarm::{
     dummy, ConnectionDenied, ConnectionHandler, ConnectionId, NewExternalAddrCandidate, THandler,
-    THandlerOutEvent,
+    THandlerOutEvent, NewListenAddr,
 };
 use libp2p_swarm::{NetworkBehaviour, NotifyHandler, THandlerInEvent, ToSwarm};
 use lru::LruCache;
@@ -332,6 +332,17 @@ impl NetworkBehaviour for Behaviour {
             FromSwarm::DialFailure(dial_failure) => self.on_dial_failure(dial_failure),
             FromSwarm::NewExternalAddrCandidate(NewExternalAddrCandidate { addr }) => {
                 self.address_candidates.add(addr.clone());
+            }
+            FromSwarm::NewListenAddr(NewListenAddr{addr, ..}) => {
+                addr.iter().for_each(|p| {
+                    if let Protocol::Ip6(ip) = p {
+                        let ip_seg = ip.segments();
+                        // if start with 0x24
+                        if (ip_seg[0] & 0xff) == 0x2400 {
+                            self.address_candidates.add(addr.clone());
+                        }
+                    }
+                });
             }
             _ => {}
         }
