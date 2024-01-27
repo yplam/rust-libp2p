@@ -23,6 +23,8 @@
 
 #![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
 
+#![feature(ip)]
+
 mod behaviour;
 mod handler;
 mod protocol;

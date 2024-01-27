@@ -336,9 +336,7 @@ impl NetworkBehaviour for Behaviour {
             FromSwarm::NewListenAddr(NewListenAddr{addr, ..}) => {
                 addr.iter().for_each(|p| {
                     if let Protocol::Ip6(ip) = p {
-                        let ip_seg = ip.segments();
-                        // if start with 0x24
-                        if (ip_seg[0] & 0xff) == 0x2400 {
+                        if ip.is_global() {
                             self.address_candidates.add(addr.clone());
                         }
                     }
